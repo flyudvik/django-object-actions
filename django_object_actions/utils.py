@@ -74,13 +74,13 @@ class BaseDjangoObjectActions(object):
 
     # USER OVERRIDABLE
     ##################
-    def register_change_actions(self):
+    def get_registered_change_actions(self):
         """
         Override this to dynamically register new change_actions.
         """
         return self.change_actions
 
-    def register_changelist_actions(self):
+    def get_registered_changelist_actions(self):
         """
         Override this to dynamically register new changelist_actions.
         """
@@ -102,13 +102,13 @@ class BaseDjangoObjectActions(object):
                         )
                     return []
         """
-        return self.register_change_actions()
+        return self.get_registered_change_actions()
 
     def get_changelist_actions(self, request):
         """
         Override this to customize what actions get to the changelist view.
         """
-        return self.register_changelist_actions()
+        return self.get_registered_changelist_actions()
 
     # INTERNAL METHODS
     ##################
@@ -124,7 +124,7 @@ class BaseDjangoObjectActions(object):
         model_actions_url_name = '%s_actions' % base_url_name
         self.tools_view_name = 'admin:' + model_actions_url_name
 
-        for action in chain(self.register_change_actions(), self.register_changelist_actions()):
+        for action in chain(self.get_registered_change_actions(), self.get_registered_changelist_actions()):
             actions[action] = getattr(self, action)
 
         return [
