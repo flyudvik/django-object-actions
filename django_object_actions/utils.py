@@ -74,6 +74,17 @@ class BaseDjangoObjectActions(object):
 
     # USER OVERRIDABLE
     ##################
+    def register_change_actions(self):
+        """
+        Override this to dynamically register new change_actions.
+        """
+        return self.change_actions
+
+    def register_changelist_actions(self):
+        """
+        Override this to dynamically register new changelist_actions.
+        """
+        return self.changelist_actions
 
     def get_change_actions(self, request, object_id, form_url):
         """
@@ -91,13 +102,13 @@ class BaseDjangoObjectActions(object):
                         )
                     return []
         """
-        return self.change_actions
+        return self.register_change_actions()
 
     def get_changelist_actions(self, request):
         """
         Override this to customize what actions get to the changelist view.
         """
-        return self.changelist_actions
+        return self.register_changelist_actions()
 
     # INTERNAL METHODS
     ##################
@@ -111,13 +122,11 @@ class BaseDjangoObjectActions(object):
         base_url_name = '%s_%s' % (self.model._meta.app_label, model_name)
         # e.g.: polls_poll_actions
         model_actions_url_name = '%s_actions' % base_url_name
-
         self.tools_view_name = 'admin:' + model_actions_url_name
 
-        # WISHLIST use get_change_actions and get_changelist_actions
-        # TODO separate change and changelist actions
-        for action in chain(self.change_actions, self.changelist_actions):
+        for action in chain(self.register_change_actions(), self.register_changelist_actions()):
             actions[action] = getattr(self, action)
+
         return [
             # change, supports the same pks the admin does
             # https://github.com/django/django/blob/stable/1.10.x/django/contrib/admin/options.py#L555
